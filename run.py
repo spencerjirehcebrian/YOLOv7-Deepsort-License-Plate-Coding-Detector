@@ -12,16 +12,17 @@ def run(
     stop_timer,
     update_text,
     update_image,
-    selected_number
+    selected_number,
 ):
     selected_value_str = selected_number.get()
     selected_value_int = int(selected_value_str)
+
     detector = Detector(
         classes=None
-    )  # it'll detect ONLY [person,horses,sports ball]. class = None means detect all classes. List info at: "data/coco.yaml"
+    )
     detector.load_model(
         "./weights/best_exp4.pt",
-    )  # pass the path to the trained weight file
+    )
 
     # Initialise  class that binds detector and tracker in one class
     tracker = YOLOv7_DeepSORT(
@@ -41,4 +42,4 @@ def run(
         verbose=1,
     )
     stop_timer()
-    close_loading(f"./video_output/{global_file_name}")
+    close_loading()

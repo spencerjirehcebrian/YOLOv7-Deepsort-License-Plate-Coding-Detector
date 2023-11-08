@@ -41,16 +41,17 @@ selected_number.set("0")
 frm = ttk.Frame(root, padding=20)
 frm.pack()
 
-ttk.Label(frm, text="YOLOv7 + DeepSORT License Plate Coding Detection (CPS - Proof of Concept)").pack(
-    padx=10, pady=2
-)
+ttk.Label(
+    frm,
+    text="YOLOv7 + DeepSORT License Plate Coding Detection (CPS - Proof of Concept)",
+).pack(padx=10, pady=2)
 
 
 def update_image(result_rgb):
     photo = ImageTk.PhotoImage(image=Image.fromarray(result_rgb))
     video_label.configure(image=photo)
     video_label.image = photo
-    
+
 
 def start_timer():
     global start_time
@@ -69,6 +70,7 @@ def update_timer():
     timer_id = time_label.after(
         100, update_timer
     )  # Update every 100 milliseconds (0.1 seconds)
+
 
 def update_text(status, output, average):
     global global_average_frame, global_current_frame
@@ -92,6 +94,14 @@ def confirm_run():
         run_model()
 
 
+    
+def confirm_stop():
+    result = messagebox.askyesno("Confirmation", "Stop the detection?")
+    if result:
+        run_model.stops()
+        
+
+        
 # Add Pause and Play buttons
 def pause_video():
     global video_paused
@@ -117,16 +127,6 @@ def play_video():
             )  # Adjust playback speed
 
 
-def video_button():
-    if video_paused == False:
-        play_button.config(text="Play")
-        pause_video()
-
-    else:
-        play_button.config(text="Pause")
-        play_video()
-
-
 def center_window(window, width, height):
     # Get the screen width and height
     screen_width = window.winfo_screenwidth()
@@ -139,6 +139,16 @@ def center_window(window, width, height):
     # Set the window's geometry to center it on the screen
     window.geometry(f"{width}x{height}+{x}+{y}")
 
+def close_loading():
+    close_button["state"] = NORMAL
+    run_button["state"] = NORMAL
+    status_label.config(text=f"DETECTION STATUS: Detection Complete")
+    stop_timer()
+
+    messagebox.showinfo(
+        "Complete",
+        f"Video Inference Complete. Video with detections saved locally.",
+    )
 
 def run_model():
     selected_value = selected_option.get()
@@ -146,43 +156,11 @@ def run_model():
     status_label.config(text=f"DETECTION STATUS: Loading YOLOv7 + DeepSORT Model...")
     pause_video()
 
-    def close_loading(final_video):
-        close_button["state"] = NORMAL
-        run_button["state"] = NORMAL
-        status_label.config(text=f"DETECTION STATUS: Detection Complete")
-        stop_timer()
-
-        label_text = time_label.cget("text")
-        label_float = 0
-        match = re.search(r"(\d+\.\d+)", label_text)
-        if match:
-            float_value = float(match.group(1))
-            label_float = float_value
-        else:
-            label_float.config(text="MODEL AVG. DETECTION TIME PER FRAME: ERROR")
-
-        global file_path, global_frame_numbers
-        file_path = final_video
-        cap = cv2.VideoCapture(file_path)
-        cap.set(cv2.CAP_PROP_FPS, desired_frame_rate)
-
-        averages = global_frame_numbers / label_float
-
-        # average_label.config(
-        #     text=f"MODEL AVG. DETECTION TIME PER FRAME: {averages:.2f} FPS"
-        # )
-        messagebox.showinfo("Complete", f"Video Inference Complete. Video with detections saved locally.")
-        # play_video()
-
     print(f"Selected radio option: {selected_value}")
     run_button["state"] = DISABLED
-    #close_button["state"] = DISABLED
-    
-    #detect.run()
-    #run.run()
-    
+
     thread = threading.Thread(
-        target=run.run,
+    target=run.run,
         args=(
             global_file_path_undetected,
             global_file_name,
@@ -191,12 +169,12 @@ def run_model():
             stop_timer,
             update_text,
             update_image,
-            selected_number
+            selected_number,
         ),
     )
+    thread.daemon = True
     thread.start()
-
-
+    
 def open_file():
     global cap, file_open, global_frame_numbers
     file_path = filedialog.askopenfilename(
@@ -221,12 +199,13 @@ def open_file():
             cap.set(cv2.CAP_PROP_FPS, desired_frame_rate)
             run_button["state"] = NORMAL
             play_video()
-        play_button["state"] = DISABLED
         video_name_label.config(text=f"Video File Path: {file_path}")
 
-def on_select(event):
-    selected_value = selected_number.get()
-    skip_label.config(text=f"Skip Frames: {selected_value}")
+
+# def on_select(event):
+#     selected_value = selected_number.get()
+#     skip_label.config(text=f"Skip every {selected_value}th Frame")
+
 
 image_label = ttk.Label(frm)
 image_label.pack()
@@ -239,13 +218,6 @@ video_name_label.pack()
 
 btn_open = ttk.Button(frm, text="Import Video File (mp4 format)", command=open_file)
 btn_open.pack(padx=10, pady=2)
-
-play_button = ttk.Button(frm, text="Pause", command=video_button, state=DISABLED)
-#play_button.pack(padx=10, pady=2)
-
-
-# pause_button = ttk.Button(frm, text="Pause", command=pause_video)
-# pause_button.pack(padx=10, pady=2)
 
 status_label = ttk.Label(frm, text="DETECTION STATUS: Inactive")
 status_label.pack(anchor="e", padx=10, pady=2)
@@ -262,23 +234,29 @@ average_label.pack(anchor="e", padx=10, pady=2)
 output_label = ttk.Label(frm, text="")
 output_label.pack(padx=10, pady=2)
 
-skip_label = ttk.Label(frm, text="Skip Frames (0 Default):")
-skip_label.pack(padx=10, pady=2)
+# skip_label = ttk.Label(frm, text="Skip Every nth Frame (0 Default)")
+# skip_label.pack(padx=10, pady=2)
 
-# Create a dropdown menu with numbers
-number_choices = [str(i) for i in range(0, 6)]
-number_dropdown = ttk.Combobox(frm, textvariable=selected_number, values=number_choices)
-number_dropdown.pack()
+# # Create a dropdown menu with numbers
+# number_choices = [str(i) for i in range(0, 6) if i != 1]
+# number_dropdown = ttk.Combobox(
+#     frm, textvariable=selected_number, values=number_choices, state="readonly"
+# )
+# number_dropdown.pack()
 
-number_dropdown.bind("<<ComboboxSelected>>", on_select)
+# number_dropdown.bind("<<ComboboxSelected>>", on_select)
 
 run_button = ttk.Button(
     frm, text="Run License Plate Coding Detection", command=confirm_run, state=DISABLED
 )
-run_button.pack(padx=10, pady=10)
+run_button.pack(padx=10, pady=2)
 
-close_button = ttk.Button(frm, text="Exit Application", command=close_window)
-close_button.pack(padx=10, pady=0)
+# stop_button = ttk.Button(
+#     frm, text="Stop Detection", command=confirm_stop)
+# stop_button.pack(padx=10, pady=2)
+
+close_button = ttk.Button(frm, text="End Detection and Exit Application", command=close_window)
+close_button.pack(padx=10, pady=20)
 
 
 root.mainloop()

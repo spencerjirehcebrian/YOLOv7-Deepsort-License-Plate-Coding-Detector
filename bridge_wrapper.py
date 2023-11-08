@@ -87,6 +87,7 @@ class YOLOv7_DeepSORT:
 
         frame_num = 0
         while True: # while video is running
+            
             return_value, frame = vid.read()
             if not return_value:
                 print('Video has ended or failed!')
