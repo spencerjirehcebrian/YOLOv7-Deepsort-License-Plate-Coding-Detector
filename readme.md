@@ -1,5 +1,5 @@
-# Installation instructions
-A Grapical User Interface that presents a Proof of Concept of a proposed YOLOv7 + DeepSORT model that detect Coding Violations in License Plates.
+# YOLOv7 Deepsort License Plate Coding Violation Detector
+A Grapical User Interface that presents a Proof of Concept of a proposed YOLOv7 + DeepSORT model that detects Coding Violations in Philippine License Plates.
 # Installation instructions
 Run the command below in your local directory
 ```bash
