@@ -1,4 +1,6 @@
-# Instalation instructions
+# Installation instructions
+A Grapical User Interface that presents a Proof of Concept of a proposed YOLOv7 + DeepSORT model that detect Coding Violations in License Plates.
+# Installation instructions
 Run the command below in your local directory
 ```bash
 pip install -r requirements.txt
@@ -9,3 +11,6 @@ To start the app run the command below in your local directory
 ```bash
 python CPS_POC.py
 ```
+# References
+Informally forked from [yolov7-deepsort-tracking](https://github.com/deshwalmahesh/yolov7-deepsort-tracking)
+
