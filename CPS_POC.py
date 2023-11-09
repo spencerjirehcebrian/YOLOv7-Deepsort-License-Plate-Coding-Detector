@@ -256,7 +256,7 @@ run_button.pack(padx=10, pady=2)
 # stop_button.pack(padx=10, pady=2)
 
 close_button = ttk.Button(frm, text="End Detection and Exit Application", command=close_window)
-close_button.pack(padx=10, pady=20)
+close_button.pack(padx=10, pady=2)
 
 
 root.mainloop()
